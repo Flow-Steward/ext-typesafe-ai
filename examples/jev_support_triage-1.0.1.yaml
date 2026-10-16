@@ -41,11 +41,6 @@ workflows:
         required: false
         default: 0.8
         description: Probability of a human-required case that triggers manual review.
-      - name: api_key
-        type: secret
-        required: false
-        description: Optional run-specific key override. Set a secret default in the
-          editor; no credential ships in this example.
       output_mode: variables
       expected_outputs:
       - name: classification
@@ -115,7 +110,6 @@ workflows:
           state: state.jev_state
           questions: state.jev_questions
           model: literal:jev-latest
-          api_key: state.inputs.api_key
         output_mapping:
           answers: state.classification
           evaluated_model: state.evaluated_model
@@ -383,11 +377,6 @@ workflows:
       - name: model
         type: string
         required: false
-      - name: api_key
-        type: secret
-        required: false
-        description: Optional run-specific key override. Set a secret default in the
-          editor; no credential ships in this example.
       output_mode: variables
       expected_outputs:
       - name: answers
@@ -408,35 +397,6 @@ workflows:
   - jev
   - classification
   steps:
-  - step_id: choose_credential
-    display_name: Choose credential
-    step_kind: if
-    override:
-      if:
-        condition:
-          exists: state.inputs.api_key
-  - step_id: evaluate_with_workflow_secret
-    display_name: Evaluate with workflow secret
-    step_kind: connector
-    override:
-      connector:
-        extension_id: flowsteward.typesafe-ai
-        operation_id: evaluate
-    connector_id: extension.flowsteward.typesafe-ai
-    connector_install_id: flowsteward.typesafe-ai
-    connection_binding_jsonb:
-      connection_id: jev-example
-    input_mapping_jsonb:
-      state: state.inputs.state
-      questions: state.inputs.questions
-      model: state.inputs.model
-      api_key: state.inputs.api_key
-    output_mapping_jsonb:
-      answers: state.answers
-      model: state.evaluated_model
-      usage: state.usage
-    error_policy:
-      on_error: route_to_step
   - step_id: evaluate_with_connection_key
     display_name: Evaluate with connection key
     step_kind: connector
@@ -476,44 +436,8 @@ workflows:
     schema_version: 1
     entry:
       kind: step
-      id: choose_credential
+      id: evaluate_with_connection_key
     edges:
-    - source:
-        kind: step
-        id: choose_credential
-      outcome:
-        name: 'true'
-      target:
-        kind: step
-        id: evaluate_with_workflow_secret
-      rework: false
-    - source:
-        kind: step
-        id: choose_credential
-      outcome:
-        name: 'false'
-      target:
-        kind: step
-        id: evaluate_with_connection_key
-      rework: false
-    - source:
-        kind: step
-        id: evaluate_with_workflow_secret
-      outcome:
-        name: success
-      target:
-        kind: step
-        id: complete
-      rework: false
-    - source:
-        kind: step
-        id: evaluate_with_workflow_secret
-      outcome:
-        name: error
-      target:
-        kind: step
-        id: provider_failed
-      rework: false
     - source:
         kind: step
         id: evaluate_with_connection_key

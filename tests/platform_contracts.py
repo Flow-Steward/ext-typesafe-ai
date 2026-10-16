@@ -61,7 +61,7 @@ def test_public_validator_health_and_bundler_accept_the_release(tmp_path):
         )
     )
     assert result.exit_code == 0, result.output
-    assert (tmp_path / "flowsteward.typesafe-ai-1.0.0.zip").is_file()
+    assert (tmp_path / "flowsteward.typesafe-ai-1.0.1.zip").is_file()
 
 
 def bundle():
@@ -117,6 +117,22 @@ def test_example_import_creates_both_workflows_and_preserves_the_child_call():
         if s["step_kind"] == "invoke_workflow"
     )
     assert invoke["override"]["invoke_workflow"]["workflow_id"] == "jev_evaluate"
+    # Compare the saved mappings, not just structural validity. The importer
+    # masks values under credential-shaped keys, including reference strings.
+    for source in yaml.safe_load(bundle())["workflows"]:
+        saved_steps = {
+            row["step_id"]: row for row in db.workflows[source["workflow_id"]]["steps"]
+        }
+        for step in source["steps"]:
+            saved = saved_steps[step["step_id"]]
+            if "input_mapping_jsonb" in step:
+                assert saved["input_mapping_jsonb"] == step["input_mapping_jsonb"]
+            invocation = step.get("override", {}).get("invoke_workflow")
+            if invocation:
+                assert (
+                    saved["override"]["invoke_workflow"]["input_mapping"]
+                    == invocation["input_mapping"]
+                )
 
 
 @pytest.mark.parametrize(
@@ -192,9 +208,12 @@ def test_workflow_key_is_resolved_only_for_dispatch_and_absent_from_result(monke
         name="api_key", ref_key="workflow:triage:input:api_key"
     ).to_wire()
     child = yaml.safe_load(bundle())["workflows"][1]
-    step = next(
-        s for s in child["steps"] if s["step_id"] == "evaluate_with_workflow_secret"
+    step = copy.deepcopy(
+        next(s for s in child["steps"] if s["step_kind"] == "connector")
     )
+    # Advanced workflows can still use the connector's optional secret override.
+    # The importable example uses only the saved project connection.
+    step["input_mapping_jsonb"]["api_key"] = "state.inputs.api_key"
     result = runtime.execute_connector_step(
         step=step,
         state={

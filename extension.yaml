@@ -1,7 +1,7 @@
 manifest_version: 2
 extension_id: flowsteward.typesafe-ai
 kind: tool_provider
-version: 1.0.0
+version: 1.0.1
 lifecycle: {data_schema_version: 1, data_migrations: []}
 release_stage: active
 display_name: TypeSafe AI (JEV)

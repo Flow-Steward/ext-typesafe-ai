@@ -19,16 +19,13 @@ LLM is needed by the example.
    [`examples/jev_support_triage-1.0.1.yaml`](examples/jev_support_triage-1.0.1.yaml), and import it.
    Map the TypeSafe extension dependency and the `jev-example` connection
    dependency to your installed extension and chosen project connection.
-6. In the imported `jev_evaluate` child, verify that **both Evaluate steps**
-   select the intended connection. Enable the child and then the parent after
+6. In the imported `jev_evaluate` child, verify that **Evaluate with connection key**
+   selects the intended connection. Enable the child and then the parent after
    validation. Run `jev_support_triage` with a `message`.
 
-Some Flow Steward v2 builds redact mapping expressions under `api_key` during
-import. If validation shows `[redacted]`, restore **the reference**
-`state.inputs.api_key` in the parent's **Classify → Input mapping api_key** and
-the child's **Evaluate with workflow secret → api_key parameter** (State path).
-Do not enter a literal key into either mapping. This is an importer limitation;
-the saved project connection works without a workflow key override.
+The example uses the saved project connection's encrypted key. Import only
+requires the normal dependency mapping and enablement; no step parameters or
+secret references need editing after import.
 
 The example ships disabled, carries its child workflow and contains no API key,
 configured secret default or machine-specific install ID. Importing it does not
@@ -61,16 +58,17 @@ questions and compressed responses are outside this version's contract.
 
 ### Workflow secret defaults
 
-Both example workflows have an optional `api_key` input of type `secret`.
-Normally leave it unset and use the project connection's key. To override it,
-configure its **secret default in the parent workflow editor**. The parent
-passes the opaque reference to the child, which maps it into the connector only
-on the secret-present branch. Flow Steward resolves it at its authorized
-connector boundary. The key is never passed through Template or an agent prompt.
+The connector accepts an optional `api_key` mapped from a workflow input of
+type `secret`. An advanced workflow can declare that input, configure its
+encrypted secret default in the editor and map `state.inputs.api_key` into the
+connector. Flow Steward resolves the opaque reference at its authorized
+connector boundary; never pass the key through Template or an agent prompt.
 
-Secret defaults are deliberately absent from exported example files. Configure
-them again after import. Do not put a literal key in YAML, a text input, a model
-prompt, a template, an operation parameter field or source control.
+The released example uses only the saved connection and has no secret override
+input. Some Flow Steward v2 importers redact credential-named mappings even when
+their values are references. Keeping that optional advanced setup outside the
+base example lets it import without repairing mappings. Do not add a literal
+key to YAML, an operation parameter, a text input or source control.
 
 ## Classification example
 
@@ -144,12 +142,12 @@ that repository's catalog using its existing publisher.
 
 ## Live acceptance
 
-On 2026-10-16, extension 1.0.0 and the corrected workflow example 1.0.1 were
+On 2026-10-16, the JEV connector and classification graph were
 verified on a local Flow Steward v2 installation using a saved project
 connection. A synthetic HTTP 500 production outage completed the whole parent
 and child flow in 3 seconds: model `jev-1.13.0`, category `technical` with
 confidence `1.0`, urgency `3` with confidence `1.0`, `routing_key: technical`,
-`needs_review: false`. The optional workflow-key branch has automated coverage;
+`needs_review: false`. The connector's optional workflow-key override has automated coverage;
 it was not exercised with a real credential in this acceptance run.
 
 The core UI masks `input_tokens` and `output_tokens` as `[REDACTED]` and does not
