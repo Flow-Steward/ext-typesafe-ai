@@ -1,0 +1,51 @@
+# Copy to .github/workflows/release-extension.yml in YOUR extension's repository.
+#
+# Push a tag that matches extension.yaml's version (`git tag v1.2.0 && git push --tags`)
+# and this workflow builds <extension_id>-<version>.zip from the tracked files and
+# attaches it to a GitHub Release. The Flow Steward catalog picks the release up
+# within the hour. Mark files that must not ship with `export-ignore` in
+# .gitattributes (tests/, docs/ ...).
+name: Release extension
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the release archive
+        id: build
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import re, sys
+          text = open("extension.yaml", encoding="utf-8").read()
+          def field(name):
+              match = re.search(rf"^{name}:\s*['\"]?([^'\"\s#]+)", text, re.M)
+              return match.group(1) if match else ""
+          extension_id, version = field("extension_id"), field("version")
+          tag = "${{ github.ref_name }}"
+          if tag != f"v{version}":
+              sys.exit(f"tag {tag} does not match extension.yaml version {version}")
+          print(f"id={extension_id}")
+          print(f"version={version}")
+          print(f"folder={extension_id.replace('.', '_').replace('-', '_')}")
+          PY
+      - name: Zip the tracked files under the extension's folder
+        run: >
+          git archive --format=zip
+          --prefix="${{ steps.build.outputs.folder }}/"
+          -o "${{ steps.build.outputs.id }}-${{ steps.build.outputs.version }}.zip" HEAD
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create "${{ github.ref_name }}"
+          "${{ steps.build.outputs.id }}-${{ steps.build.outputs.version }}.zip"
+          "examples/jev_support_triage-1.0.0.yaml"
+          --title "${{ github.ref_name }}" --generate-notes

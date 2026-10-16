@@ -1,0 +1,8 @@
+forms:
+  - operation_id: evaluate
+    title: Evaluate with JEV
+    fields:
+      - {name: state, widget_type: json, label: State, required: true}
+      - {name: questions, widget_type: json, label: Named questions, required: true}
+      - {name: model, widget_type: text, label: Model override}
+      - {name: api_key, widget_type: text, label: Workflow secret source}

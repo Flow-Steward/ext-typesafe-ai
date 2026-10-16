@@ -1,0 +1,5 @@
+page_id: overview
+title: TypeSafe AI
+description: Structured decisions with JEV.
+components:
+  - ref: ../components/overview.yaml

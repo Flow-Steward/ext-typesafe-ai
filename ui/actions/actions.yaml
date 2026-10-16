@@ -1,0 +1,24 @@
+actions:
+  - action_id: evaluate
+    title: Evaluate with JEV
+    description: Return structured decisions for the supplied state and questions.
+    handler: {mode: extension}
+    workflow_visible: true
+    mutates_platform: false
+    required_scopes: [extension:invoke]
+    parameters:
+      - {name: connection_ref, type: connection_ref, required: true}
+      - {name: state, type: json, required: true}
+      - {name: questions, type: object, required: true}
+      - {name: model, type: string, required: false}
+      - {name: api_key, type: string, required: false}
+    result_fields: [model, answers, usage]
+  - action_id: test_connection
+    title: Test TypeSafe connection
+    description: Check authentication and list accessible JEV model names.
+    handler: {mode: extension}
+    workflow_visible: true
+    mutates_platform: false
+    required_scopes: [extension:invoke]
+    parameters: [{name: connection_ref, type: connection_ref, required: true}]
+    result_fields: [models]

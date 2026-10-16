@@ -1,0 +1,5 @@
+page_id: connections
+title: Connections
+description: Add independent TypeSafe connections for each project.
+components:
+  - ref: ../components/connection_form.yaml

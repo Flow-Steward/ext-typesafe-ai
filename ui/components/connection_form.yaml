@@ -1,0 +1,30 @@
+component_id: typesafe_connection
+type: connection_form
+title: TypeSafe JEV connection
+description: Select a project and save a separate TypeSafe API key for this connection.
+data:
+  connection_kind: extension
+  connection_type: typesafe_jev
+  provider: typesafe
+  config_fields: [model, timeout_seconds]
+  secret_fields: [api_key]
+  required_secret_fields: [api_key]
+  test_action: test_connection
+  tags: [typesafe, jev]
+defaults:
+  display_name: TypeSafe JEV
+  model: jev-latest
+  timeout_seconds: 30
+fields:
+  - {path: display_name, label: Connection name, widget: text, required: true}
+  - {path: environment, label: Environment, widget: text}
+  - path: api_key
+    label: TypeSafe API key
+    widget: secret
+    required: true
+    help: Create a key in console.typesafe.ai. It is stored in this project's connection secrets.
+  - path: model
+    label: Default model
+    widget: text
+    help: Use jev-latest or a model name returned by Test connection. Pin a version when routing thresholds must stay stable.
+  - {path: timeout_seconds, label: Timeout in seconds, widget: integer, minimum: 1, maximum: 60}

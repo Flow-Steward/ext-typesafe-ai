@@ -1,0 +1,8 @@
+component_id: typesafe_overview
+type: markdown
+title: TypeSafe AI (JEV)
+content: |
+  Add a connection in the required project, save its TypeSafe API key and use **Test connection**.
+  Each project can have several independent connections. Choose one on an **Evaluate with JEV** workflow step.
+  JEV evaluates Choice, Score and Noul questions; it is not a chat model.
+  Calls send the supplied state to api.typesafe.ai and may consume your TypeSafe credits, including in Test Run.

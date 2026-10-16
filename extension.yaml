@@ -1,0 +1,70 @@
+manifest_version: 2
+extension_id: flowsteward.typesafe-ai
+kind: tool_provider
+version: 1.0.0
+lifecycle: {data_schema_version: 1, data_migrations: []}
+release_stage: active
+display_name: TypeSafe AI (JEV)
+description: Evaluate text or structured state with TypeSafe JEV using Choice, Score and Noul questions and project-scoped connections.
+vendor:
+  name: Flow Steward
+  website_url: https://github.com/Flow-Steward/ext-typesafe-ai
+  support_url: https://github.com/Flow-Steward/ext-typesafe-ai/issues
+listing:
+  category: ai
+  tags: [typesafe, jev, classification, routing, scoring]
+  summary: Fast structured decisions through JEV with reusable project connections.
+  setup_summary: Create a TypeSafe project connection and API key. The release also includes an optional workflow example to import separately.
+features: [tool, action]
+required_scopes: [extension:invoke]
+machine_auth:
+  service_account_key: svc_ext_typesafe_ai
+  required_scopes: [extension:invoke]
+account_scope:
+  scope_type: project
+  description: Each project selects its own TypeSafe connections and encrypted API keys.
+runtime_grants:
+  resources:
+    project_connection: {scope: owning_extension}
+  mutations:
+    project_connection_upsert: {scope: owning_extension}
+    project_connection_secrets_save:
+      scope: owning_extension
+      secret_keys: [api_key]
+      connection_type_ids: [typesafe_jev]
+egress:
+  hosts: [api.typesafe.ai]
+schemas:
+  config: schemas/config.schema.yaml
+  secrets: schemas/secrets.schema.yaml
+  subscriptions: schemas/subscriptions.schema.yaml
+  input:
+    type: object
+    properties: {action: {type: object}}
+  output:
+    type: object
+    required: [ok]
+    properties:
+      ok: {type: boolean}
+      result: {type: object}
+      error_code: {type: string}
+      error: {type: string}
+      errors: {type: array}
+entrypoint:
+  mode: subprocess
+  command: [python3, main.py]
+  timeout_seconds: 90
+health:
+  command: [python3, health.py]
+  timeout_seconds: 5
+python_requirements: []
+ui_manifest: ui/ui_manifest.yaml
+action_manifest: ui/actions/actions.yaml
+runtime:
+  contract_version: extension_host_v2
+  extension_contract_v2:
+    connection_types: contracts/connection_types.yaml
+    operation_manifest: contracts/operation_manifest.yaml
+    step_ui_manifest: contracts/step_ui_manifest.yaml
+    resource_query_manifest: contracts/resource_query_manifest.yaml
+    artifact_policies: contracts/artifact_policies.yaml
