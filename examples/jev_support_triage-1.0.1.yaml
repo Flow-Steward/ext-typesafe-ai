@@ -8,7 +8,7 @@ metadata:
   flow_steward_version: 0.7.16
 workflows:
 - workflow_id: jev_support_triage
-  version: 1.0.0
+  version: 1.0.1
   display_name: Classify support requests with TypeSafe JEV
   description: Classify a customer message by topic and urgency with JEV. Return a
     queue recommendation and send uncertain decisions or human-required requests to
@@ -354,7 +354,7 @@ workflows:
         id: automatic_route
       rework: false
 - workflow_id: jev_evaluate
-  version: 1.0.0
+  version: 1.0.1
   display_name: Evaluate state with TypeSafe JEV
   description: Reusable JEV evaluation through a selected project connection. Pass
     state and named questions; receive answers, the resolved model and token usage.
@@ -383,7 +383,6 @@ workflows:
       - name: model
         type: string
         required: false
-        default: jev-latest
       - name: api_key
         type: secret
         required: false

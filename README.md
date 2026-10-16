@@ -16,12 +16,19 @@ LLM is needed by the example.
 4. Use **Test connection**. It authenticates with `GET /v1/models`; it does not
    send a decision request. Package health alone does not verify credentials.
 5. Download the separate workflow YAML asset from the release, or use
-   [`examples/jev_support_triage-1.0.0.yaml`](examples/jev_support_triage-1.0.0.yaml), and import it.
+   [`examples/jev_support_triage-1.0.1.yaml`](examples/jev_support_triage-1.0.1.yaml), and import it.
    Map the TypeSafe extension dependency and the `jev-example` connection
    dependency to your installed extension and chosen project connection.
 6. In the imported `jev_evaluate` child, verify that **both Evaluate steps**
    select the intended connection. Enable the child and then the parent after
    validation. Run `jev_support_triage` with a `message`.
+
+Some Flow Steward v2 builds redact mapping expressions under `api_key` during
+import. If validation shows `[redacted]`, restore **the reference**
+`state.inputs.api_key` in the parent's **Classify → Input mapping api_key** and
+the child's **Evaluate with workflow secret → api_key parameter** (State path).
+Do not enter a literal key into either mapping. This is an importer limitation;
+the saved project connection works without a workflow key override.
 
 The example ships disabled, carries its child workflow and contains no API key,
 configured secret default or machine-specific install ID. Importing it does not
@@ -87,7 +94,8 @@ workflow to that outcome if required.
 The thresholds are illustrative. Calibrate them on labelled examples from your
 own requests before acting automatically. Pin a model version when thresholds
 must remain stable. The example explicitly passes `jev-latest`; change the
-parent's model mapping and the child's model default to pin another version.
+parent's model mapping to pin another version. The child's `model` input has no
+fixed default, so callers can supply it.
 The child workflow's field-based input takes a `state`
 object; wrap text as `{"message": "..."}`. Direct connector calls support all
 three TypeSafe state shapes (string, object and array).
@@ -133,3 +141,17 @@ Publish a version
 tag only after local verification; then register this repository in
 `Flow-Steward/extensions/extensions/flowsteward.typesafe-ai.yaml` and regenerate
 that repository's catalog using its existing publisher.
+
+## Live acceptance
+
+On 2026-10-16, extension 1.0.0 and the corrected workflow example 1.0.1 were
+verified on a local Flow Steward v2 installation using a saved project
+connection. A synthetic HTTP 500 production outage completed the whole parent
+and child flow in 3 seconds: model `jev-1.13.0`, category `technical` with
+confidence `1.0`, urgency `3` with confidence `1.0`, `routing_key: technical`,
+`needs_review: false`. The optional workflow-key branch has automated coverage;
+it was not exercised with a real credential in this acceptance run.
+
+The core UI masks `input_tokens` and `output_tokens` as `[REDACTED]` and does not
+add this extension call to its model-cost total. A displayed zero cost does not
+mean the provider request was free.

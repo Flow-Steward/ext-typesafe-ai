@@ -15,16 +15,25 @@ from core.application.orchestration.control_flow_step_node import control_flow_s
 from core.application.orchestration.run_definition import clear_run_definition_cache
 from core.application.orchestration.step_hub import orchestrator_hub_node
 from core.application.registry.workflow_secret_defaults import secret_ref_fingerprint
+from core.application.registry.workflow_contract import WorkflowInterface
+from core.application.registry.workflow_contract_service import WorkflowInterfaceService
 from core.application.tooling.extensions.bundle_extension import bundle_extension
 from core.application.tooling.extensions.models import (
     ExtensionBundleRequest,
     ExtensionValidationRequest,
 )
 from core.application.tooling.extensions.validate_extensions import validate_extensions
-from core.application.workflows.workflow_definition_validation import validate_workflow_definition
+from core.application.workflows.workflow_definition_validation import (
+    validate_workflow_definition,
+)
 from core.application.workflows.workflow_portability import WorkflowPortabilityService
-from core.infrastructure.extension_runtime.extension_runtime_compile import compile_extension_bundle
-from core.infrastructure.security.secret_reference import SecretReference, is_secret_reference
+from core.infrastructure.extension_runtime.extension_runtime_compile import (
+    compile_extension_bundle,
+)
+from core.infrastructure.security.secret_reference import (
+    SecretReference,
+    is_secret_reference,
+)
 from tests._step_run_state import prime
 from tests.unit.test_workflow_portability import _PortabilityDB
 
@@ -39,7 +48,10 @@ def test_bundle_compiles_with_project_connection_ui():
 def test_public_validator_health_and_bundler_accept_the_release(tmp_path):
     validation = validate_extensions(
         ExtensionValidationRequest(
-            extension_id="flowsteward.typesafe-ai", root=ROOT.parent, health=True, marketplace=True
+            extension_id="flowsteward.typesafe-ai",
+            root=ROOT.parent,
+            health=True,
+            marketplace=True,
         )
     )
     assert validation.exit_code == 0, validation.output
@@ -53,13 +65,33 @@ def test_public_validator_health_and_bundler_accept_the_release(tmp_path):
 
 
 def bundle():
-    return (ROOT / "examples/jev_support_triage-1.0.0.yaml").read_text()
+    return (ROOT / "examples/jev_support_triage-1.0.1.yaml").read_text()
+
+
+def test_parent_can_supply_the_child_model_at_the_actual_input_boundary():
+    parent, child = yaml.safe_load(bundle())["workflows"]
+    invoke = next(step for step in parent["steps"] if step["step_id"] == "classify")
+    model_source = invoke["override"]["invoke_workflow"]["input_mapping"]["model"]
+    assert model_source.startswith("literal:")
+    result = WorkflowInterfaceService().validate_delegated_inputs(
+        WorkflowInterface.from_settings(child["settings"]),
+        {
+            "state": {"message": "Production API outage"},
+            "questions": {"urgent": {"type": "noul", "instructions": "Urgent?"}},
+            "model": model_source.removeprefix("literal:"),
+        },
+    )
+    assert result.ok, result.errors
+    assert result.inputs["model"] == "jev-latest"
 
 
 def test_example_import_creates_both_workflows_and_preserves_the_child_call():
     db = _PortabilityDB(
         installs={
-            "flowsteward.typesafe-ai": {"install_id": "flowsteward.typesafe-ai", "status": "active"}
+            "flowsteward.typesafe-ai": {
+                "install_id": "flowsteward.typesafe-ai",
+                "status": "active",
+            }
         },
         connections={"jev-example": {"connection_id": "jev-example", "enabled": True}},
     )
@@ -104,7 +136,10 @@ def test_real_workflow_graph_routes_uncertain_and_human_cases_to_review(
     category, confidence, urgency_confidence, human, expected
 ):
     definition = copy.deepcopy(yaml.safe_load(bundle())["workflows"][0])
-    definition["execution_graph"]["entry"] = {"kind": "step", "id": "category_confident"}
+    definition["execution_graph"]["entry"] = {
+        "kind": "step",
+        "id": "category_confident",
+    }
     state = {
         "workflow_id": "jev_support_triage",
         "agent_messages": [],
@@ -120,7 +155,8 @@ def test_real_workflow_graph_routes_uncertain_and_human_cases_to_review(
     with (
         patch("core.application.orchestration.agents.common.emit_event"),
         patch(
-            "core.application.orchestration.agents.common.publish_agent_message", return_value=True
+            "core.application.orchestration.agents.common.publish_agent_message",
+            return_value=True,
         ),
     ):
         for _ in range(15):
@@ -146,13 +182,19 @@ def test_workflow_key_is_resolved_only_for_dispatch_and_absent_from_result(monke
         return {"handled": True, "ok": True, "result": {"answers": {}}}
 
     monkeypatch.setattr(runtime, "_dispatch_tool_runtime", dispatch)
-    monkeypatch.setattr(runtime, "_read_secret_ciphertext", lambda account_id, ref_key: "encrypted")
+    monkeypatch.setattr(
+        runtime, "_read_secret_ciphertext", lambda account_id, ref_key: "encrypted"
+    )
     monkeypatch.setattr(
         runtime, "_decrypt_secret_value", lambda ciphertext: "private-run-credential"
     )
-    reference = SecretReference(name="api_key", ref_key="workflow:triage:input:api_key").to_wire()
+    reference = SecretReference(
+        name="api_key", ref_key="workflow:triage:input:api_key"
+    ).to_wire()
     child = yaml.safe_load(bundle())["workflows"][1]
-    step = next(s for s in child["steps"] if s["step_id"] == "evaluate_with_workflow_secret")
+    step = next(
+        s for s in child["steps"] if s["step_id"] == "evaluate_with_workflow_secret"
+    )
     result = runtime.execute_connector_step(
         step=step,
         state={
