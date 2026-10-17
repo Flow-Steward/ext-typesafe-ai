@@ -1,7 +1,7 @@
 manifest_version: 2
 extension_id: flowsteward.typesafe-ai
 kind: tool_provider
-version: 1.0.1
+version: 1.0.2
 lifecycle: {data_schema_version: 1, data_migrations: []}
 release_stage: active
 display_name: TypeSafe AI (JEV)
@@ -50,6 +50,11 @@ schemas:
       error_code: {type: string}
       error: {type: string}
       errors: {type: array}
+      failure_class: {type: string}
+      retryable: {type: boolean}
+      external_effect_status: {type: string}
+      definitely_no_external_effect: {type: boolean}
+      http_status: {type: integer}
 entrypoint:
   mode: subprocess
   command: [python3, main.py]

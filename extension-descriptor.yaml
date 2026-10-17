@@ -1,6 +1,6 @@
 schema_version: extension_descriptor_v1
 extension_id: flowsteward.typesafe-ai
-release_version: 1.0.1
+release_version: 1.0.2
 extension_type: service_extension
 identity:
   display_name: TypeSafe AI (JEV)

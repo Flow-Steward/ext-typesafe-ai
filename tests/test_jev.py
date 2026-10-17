@@ -88,7 +88,12 @@ class Connection:
         self.closed = False
 
     def request(self, method, path, body, headers):
-        self.sent = (method, path, json.loads(body) if body is not None else None, headers)
+        self.sent = (
+            method,
+            path,
+            json.loads(body) if body is not None else None,
+            headers,
+        )
 
     def getresponse(self):
         return self
@@ -149,7 +154,9 @@ def test_mixed_questions_reach_the_official_endpoint_without_changing_state(
         (302, "redirect_refused"),
     ],
 )
-def test_provider_failures_are_safe_and_never_follow_redirects(jev, monkeypatch, status, code):
+def test_provider_failures_are_safe_and_never_follow_redirects(
+    jev, monkeypatch, status, code
+):
     connection = transport(monkeypatch, jev, {"error": "unit-test-credential"}, status)
     result = jev.handle_payload(envelope())
     assert result["ok"] is False
@@ -167,7 +174,11 @@ def test_provider_failures_are_safe_and_never_follow_redirects(jev, monkeypatch,
         {"state": None},
         {"questions": {}},
         {"questions": {"x": {"type": "chat", "instructions": "x"}}},
-        {"questions": {"x": {"type": "score", "criteria": ["one"], "instructions": "x"}}},
+        {
+            "questions": {
+                "x": {"type": "score", "criteria": ["one"], "instructions": "x"}
+            }
+        },
         {"base_url": "https://attacker.test"},
         {"state": {"x": float("nan")}},
     ],
@@ -188,6 +199,35 @@ def test_timeout_does_not_expose_credentials_or_retry(jev, monkeypatch):
     result = jev.handle_payload(envelope())
     assert result["error_code"] == "upstream_timeout"
     assert "unit-test-credential" not in json.dumps(result)
+
+
+@pytest.mark.parametrize("status", [400, 422])
+def test_rejected_model_is_a_definitive_failure_for_the_workflow_error_route(
+    jev, monkeypatch, status
+):
+    connection = transport(monkeypatch, jev, {"error": "unit-test-credential"}, status)
+    result = jev.handle_payload(envelope(model="jev-does-not-exist"))
+
+    assert result["ok"] is False
+    assert result["error_code"] == "request_rejected"
+    assert result["retryable"] is False
+    assert result["failure_class"] == "validation"
+    assert result["external_effect_status"] == "failed"
+    assert result["definitely_no_external_effect"] is True
+    assert result["http_status"] == status
+    assert "unit-test-credential" not in json.dumps(result)
+    assert connection.closed
+
+
+@pytest.mark.parametrize("status", [408, 429, 500, 503])
+def test_uncertain_provider_failures_do_not_claim_a_definitive_rejection(
+    jev, monkeypatch, status
+):
+    transport(monkeypatch, jev, {"error": "unit-test-credential"}, status)
+    result = jev.handle_payload(envelope())
+
+    assert result["ok"] is False
+    assert result.get("definitely_no_external_effect") is not True
 
 
 def test_workflow_secret_can_override_the_selected_connection_key(jev, monkeypatch):
@@ -214,12 +254,17 @@ def test_connection_test_lists_models_without_a_decision_request(jev, monkeypatc
     payload = envelope()
     payload["action"]["action_id"] = "test_connection"
     payload["action"]["input"] = {"connection_ref": "jev-project-one"}
-    assert jev.handle_payload(payload) == {"ok": True, "result": {"models": ["jev-latest"]}}
+    assert jev.handle_payload(payload) == {
+        "ok": True,
+        "result": {"models": ["jev-latest"]},
+    }
     assert connection.sent[:3] == ("GET", "/v1/models", None)
 
 
 @pytest.mark.parametrize("confidence", [None, "0.9", -0.1, 1.1, True])
-def test_invalid_confidence_is_never_a_successful_classification(jev, monkeypatch, confidence):
+def test_invalid_confidence_is_never_a_successful_classification(
+    jev, monkeypatch, confidence
+):
     response = answer()
     response["answers"]["topic"]["confidence"] = confidence
     transport(monkeypatch, jev, response)

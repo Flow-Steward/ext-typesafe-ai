@@ -132,6 +132,13 @@ not standalone tests of this zero-dependency runtime.
 Live authentication and inference require your own key. A passing mocked
 transport test does not claim live JEV verification.
 
+JEV HTTP 400 and 422 validation rejections are definitive, non-retryable
+failures. They follow the workflow's configured error edges (`provider_failed`
+in the evaluation child, then `classification_failed` in the triage example)
+without an operation-recovery approval. Timeouts and other uncertain failures
+retain the host's conservative recovery policy. Error details contain only
+the HTTP status, never provider response bodies or authorization headers.
+
 Releases use the standard Flow Steward catalog archive format. The runtime ZIP
 excludes development tooling, tests and examples; the workflow example is a
 separate release asset, and importing it remains an explicit operator action.

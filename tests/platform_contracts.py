@@ -14,9 +14,9 @@ from core.application.orchestration import connector_step_runtime as runtime
 from core.application.orchestration.control_flow_step_node import control_flow_step_node
 from core.application.orchestration.run_definition import clear_run_definition_cache
 from core.application.orchestration.step_hub import orchestrator_hub_node
-from core.application.registry.workflow_secret_defaults import secret_ref_fingerprint
 from core.application.registry.workflow_contract import WorkflowInterface
 from core.application.registry.workflow_contract_service import WorkflowInterfaceService
+from core.application.registry.workflow_secret_defaults import secret_ref_fingerprint
 from core.application.tooling.extensions.bundle_extension import bundle_extension
 from core.application.tooling.extensions.models import (
     ExtensionBundleRequest,
@@ -61,7 +61,7 @@ def test_public_validator_health_and_bundler_accept_the_release(tmp_path):
         )
     )
     assert result.exit_code == 0, result.output
-    assert (tmp_path / "flowsteward.typesafe-ai-1.0.1.zip").is_file()
+    assert (tmp_path / "flowsteward.typesafe-ai-1.0.2.zip").is_file()
 
 
 def bundle():
