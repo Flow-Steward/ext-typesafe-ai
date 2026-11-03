@@ -4,6 +4,9 @@ Universal JEV decisions through standard **project connections**, with an
 importable support-request classification example. No chat model or additional
 LLM is needed by the example.
 
+Logo: `icon.png` uses the official TypeSafe AI mark. See [BRANDING.md](BRANDING.md)
+for its source and attribution.
+
 ## Set up
 
 1. Install the release ZIP through **Extensions → Install from file** or the
