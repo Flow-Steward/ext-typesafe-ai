@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "extension_id": "flowsteward.typesafe-ai",
+  "runtime_targets": [""],
+  "payload_sources": [],
+  "test_requirements": ["requirements-dev.txt"],
+  "test_paths": ["tests/test_jev.py"],
+  "additional_assets": ["examples/jev_support_triage-1.0.1.yaml"]
+}

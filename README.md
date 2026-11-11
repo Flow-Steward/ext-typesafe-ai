@@ -144,6 +144,12 @@ without an operation-recovery approval. Timeouts and other uncertain failures
 retain the host's conservative recovery policy. Error details contain only
 the HTTP status, never provider response bodies or authorization headers.
 
+Pushes to `main` and pull requests use the shared Flow Steward build workflow
+with the standalone `tests/test_jev.py` suite. Version tags and manual tag-based
+releases use the shared release workflow; the support-triage example remains a
+separate downloadable asset. Build and release settings live in
+`.github/release-config.json`.
+
 Releases use the standard Flow Steward catalog archive format. The runtime ZIP
 excludes development tooling, tests and examples; the workflow example is a
 separate release asset, and importing it remains an explicit operator action.

@@ -61,7 +61,7 @@ def test_public_validator_health_and_bundler_accept_the_release(tmp_path):
         )
     )
     assert result.exit_code == 0, result.output
-    assert (tmp_path / "flowsteward.typesafe-ai-1.0.6.zip").is_file()
+    assert (tmp_path / "flowsteward.typesafe-ai-1.0.7.zip").is_file()
 
 
 def bundle():
