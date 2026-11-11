@@ -1,8 +1,10 @@
 # TypeSafe AI (JEV) for Flow Steward
 
-Universal JEV decisions through standard **project connections**, with an
-importable support-request classification example. No chat model or additional
-LLM is needed by the example.
+Classify requests, score priorities and route workflow outcomes with TypeSafe AI's JEV structured decisions. Send text, an object or an array as state, together with named Choice, Score or Noul questions. The action returns the selected model, answer objects and usage information for subsequent workflow steps.
+
+Choice answers include a selected option, confidence and option probabilities. Score answers include the score, confidence, legend and probabilities. Noul returns a yes probability. These outputs let you build classification, prioritization and routing rules with thresholds that you control. Noul probability and Choice or Score confidence represent different quantities, so choose routing rules to match the question type.
+
+An optional, separately imported support-triage example combines category, urgency and human-review questions using a reusable child workflow. It returns a routing recommendation; you connect the outcome to your own ticketing or human-handling process. The extension is a decision tool rather than a chat-model provider. It supports text and structured state, while image and Box questions are outside this release. Inputs are sent to TypeSafe, and provider credits and model access apply.
 
 Logo: `icon.png` uses the official TypeSafe AI mark. See [BRANDING.md](BRANDING.md)
 for its source and attribution.

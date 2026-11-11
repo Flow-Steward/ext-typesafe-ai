@@ -1,20 +1,33 @@
 manifest_version: 2
 extension_id: flowsteward.typesafe-ai
 kind: tool_provider
-version: 1.0.5
+version: 1.0.6
 lifecycle: {data_schema_version: 1, data_migrations: []}
 release_stage: active
 display_name: TypeSafe AI (JEV)
-description: Evaluate text or structured state with TypeSafe JEV using Choice, Score and Noul questions and project-scoped connections.
+description: |-
+  Classify requests, score priorities and route workflow outcomes with TypeSafe AI's JEV structured decisions. Send text, an object or an array as state, together with named Choice, Score or Noul questions. The action returns the selected model, answer objects and usage information for subsequent workflow steps.
+
+  Choice answers include a selected option, confidence and option probabilities. Score answers include the score, confidence, legend and probabilities. Noul returns a yes probability. These outputs let you build classification, prioritization and routing rules with thresholds that you control. Noul probability and Choice or Score confidence represent different quantities, so choose routing rules to match the question type.
+
+  An optional, separately imported support-triage example combines category, urgency and human-review questions using a reusable child workflow. It returns a routing recommendation; you connect the outcome to your own ticketing or human-handling process. The extension is a decision tool rather than a chat-model provider. It supports text and structured state, while image and Box questions are outside this release. Inputs are sent to TypeSafe, and provider credits and model access apply.
 vendor:
   name: Flow Steward
   website_url: https://github.com/Flow-Steward/ext-typesafe-ai
   support_url: https://github.com/Flow-Steward/ext-typesafe-ai/issues
 listing:
   category: ai
-  tags: [typesafe, jev, classification, routing, scoring]
-  summary: Fast structured decisions through JEV with reusable project connections.
-  setup_summary: Create a TypeSafe project connection and API key. The release also includes an optional workflow example to import separately.
+  tags:
+  - typesafe
+  - jev
+  - classification
+  - routing
+  - scoring
+  summary: Evaluate text or structured state with TypeSafe JEV Choice, Score and Noul questions for classification
+    and routing.
+  setup_summary: Create a project TypeSafe connection with an API key, choose a default model and test the connection.
+    If using the optional support-triage workflow, import its separate asset and map the extension and connection
+    dependencies before enabling it.
 features: [tool, action]
 required_scopes: [extension:invoke]
 machine_auth:
