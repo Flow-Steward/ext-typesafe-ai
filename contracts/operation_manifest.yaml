@@ -1,33 +1,93 @@
 operations:
-  - operation_id: evaluate
-    display_name: Evaluate with JEV
-    description: Send state and named Choice, Score or Noul questions to TypeSafe. Uses the selected connection; an optional workflow secret can override its key.
-    operation_kind: source
-    category: ai
-    connection_type_ids: [typesafe_jev]
-    inputs:
-      - {name: connection_ref, value_type: connection_ref, required: true}
-      - name: state
-        value_type: json
-        required: true
-        schema:
-          anyOf: [{type: string}, {type: object}, {type: array}]
-      - {name: questions, value_type: object, required: true}
-      - {name: model, value_type: text, required: false}
-      - {name: api_key, value_type: text, required: false}
-    outputs:
-      - {name: model, value_type: text}
-      - {name: answers, value_type: object}
-      - {name: usage, value_type: object}
-    result_fields: [result.model, result.answers, result.usage]
-    error_codes: [invalid_payload, invalid_input, invalid_connection, authentication_failed, rate_limited, request_rejected, upstream_unavailable, upstream_timeout, connection_failed, tls_failed, redirect_refused, invalid_response, internal_error]
-  - operation_id: test_connection
-    display_name: Test TypeSafe connection
-    description: Authenticate to the official model-list endpoint without making a billable classification request.
-    operation_kind: source
-    category: ai
-    connection_type_ids: [typesafe_jev]
-    inputs: [{name: connection_ref, value_type: connection_ref, required: true}]
-    outputs: [{name: models, value_type: array}]
-    result_fields: [result.models]
-    error_codes: [invalid_payload, invalid_input, invalid_connection, authentication_failed, rate_limited, request_rejected, upstream_unavailable, upstream_timeout, connection_failed, tls_failed, redirect_refused, invalid_response, internal_error]
+- operation_id: evaluate
+  display_name: Classify or score state with JEV
+  description: Send text or structured state and named Choice, Score or Noul questions through a TypeSafe connection.
+    Returns answer objects, model and usage for later routing steps; an optional workflow secret overrides the connection
+    key for this call.
+  operation_kind: source
+  category: ai
+  connection_type_ids:
+  - typesafe_jev
+  inputs:
+  - name: connection_ref
+    value_type: connection_ref
+    required: true
+    display_name: Project connection
+  - name: state
+    value_type: json
+    required: true
+    schema:
+      anyOf:
+      - type: string
+      - type: object
+      - type: array
+    display_name: State to evaluate (JSON)
+  - name: questions
+    value_type: object
+    required: true
+    display_name: Named decision questions (JSON object)
+  - name: model
+    value_type: text
+    required: false
+    display_name: Model override
+  - name: api_key
+    value_type: text
+    required: false
+    display_name: Workflow secret override
+  outputs:
+  - name: model
+    value_type: text
+  - name: answers
+    value_type: object
+  - name: usage
+    value_type: object
+  result_fields:
+  - result.model
+  - result.answers
+  - result.usage
+  error_codes:
+  - invalid_payload
+  - invalid_input
+  - invalid_connection
+  - authentication_failed
+  - rate_limited
+  - request_rejected
+  - upstream_unavailable
+  - upstream_timeout
+  - connection_failed
+  - tls_failed
+  - redirect_refused
+  - invalid_response
+  - internal_error
+- operation_id: test_connection
+  display_name: Test TypeSafe authentication and list models
+  description: Authenticate using the selected TypeSafe connection and list accessible JEV models. Does not send
+    state or make a classification request.
+  operation_kind: source
+  category: ai
+  connection_type_ids:
+  - typesafe_jev
+  inputs:
+  - name: connection_ref
+    value_type: connection_ref
+    required: true
+    display_name: Project connection
+  outputs:
+  - name: models
+    value_type: array
+  result_fields:
+  - result.models
+  error_codes:
+  - invalid_payload
+  - invalid_input
+  - invalid_connection
+  - authentication_failed
+  - rate_limited
+  - request_rejected
+  - upstream_unavailable
+  - upstream_timeout
+  - connection_failed
+  - tls_failed
+  - redirect_refused
+  - invalid_response
+  - internal_error

@@ -1,8 +1,34 @@
 forms:
-  - operation_id: evaluate
-    title: Evaluate with JEV
-    fields:
-      - {name: state, widget_type: json, label: State, required: true}
-      - {name: questions, widget_type: json, label: Named questions, required: true}
-      - {name: model, widget_type: text, label: Model override}
-      - {name: api_key, widget_type: text, label: Workflow secret source}
+- operation_id: evaluate
+  title: Classify or score state with JEV
+  fields:
+  - name: state
+    widget_type: json
+    label: State to evaluate (JSON)
+    required: true
+    help_text: Supply text as a JSON string, or a JSON object or array containing the evidence to classify. The
+      total provider request must fit within 2 MiB.
+    placeholder: '{"message":"I need help with a duplicate charge."}'
+  - name: questions
+    widget_type: json
+    label: Named decision questions (JSON object)
+    required: true
+    help_text: Provide 1–256 named questions. Each needs type and instructions. Choice criteria are an object of
+      labels; Score criteria are 2–10 ordered levels; Noul optionally describes true/false criteria. Keys become
+      keys in answers.
+    placeholder: '{"category":{"type":"choice","instructions":"Classify the customer request.","criteria":{"billing":"Payments,
+      invoices or refunds","technical":"Product problems","general":"Other requests"}}}'
+  - name: model
+    widget_type: text
+    label: Model override
+    help_text: Optional model name. Leave blank to use the selected connection default; pin a model version when
+      routing thresholds must remain stable.
+    placeholder: jev-latest
+  - name: api_key
+    widget_type: text
+    label: Workflow secret override
+    help_text: Optional advanced mapping from a workflow input of type secret. Leave blank to use the encrypted
+      connection key. Map the authorized secret reference directly; do not paste a literal key.
+- operation_id: test_connection
+  title: Test TypeSafe authentication and list models
+  fields: []

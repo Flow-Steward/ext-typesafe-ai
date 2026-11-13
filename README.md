@@ -38,7 +38,7 @@ make an API call. **Test Run can call TypeSafe and consume provider credits.**
 
 ## Universal connector
 
-**Evaluate with JEV** takes the selected connection and:
+**Classify or score state with JEV** takes the selected connection and:
 
 | Input | Meaning |
 | --- | --- |
@@ -171,3 +171,7 @@ it was not exercised with a real credential in this acceptance run.
 The core UI masks `input_tokens` and `output_tokens` as `[REDACTED]` and does not
 add this extension call to its model-cost total. A displayed zero cost does not
 mean the provider request was free.
+
+## Workflow action setup and examples
+
+See [Workflow actions](docs/workflow-actions.md) for connection setup, inputs and practical examples.
